@@ -28,7 +28,8 @@ const SignIn = async () => {
         })
         const dataPost = await responsePost.json();
         if (!responsePost.ok)
-            alert("password is not enough strong , please enter a difference..")
+            alert("password is not enough strong , please enter a difference..")//אם יש בעיה אחרת כמו מייל לא חוקי, הוא גם מקפיץ את השגיאה הזאת 
+           //צריך להיות הפרדה בין השגיאות
         else
             alert(`${dataPost.firstName} created`)
     }
