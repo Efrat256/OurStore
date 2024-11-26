@@ -20,7 +20,7 @@ const updateDetails = async () => {
             },
             body: JSON.stringify(newUser)
         })
-        const dataPut = await responsePut.json();
+        const dataPut = await responsePut.json();//יש נפילה בשורה הזאת למרות שהעדכון עצמו עובד מצוין
         if (responsePut.ok)
             alert(`${dataPut.firstName} updated`)
         else 

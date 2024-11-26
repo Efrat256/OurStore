@@ -28,7 +28,8 @@ const SignIn = async () => {
         })
         const dataPost = await responsePost.json();
         if (!responsePost.ok)
-            alert("password is not enough strong , please enter a difference..")
+            alert("password is not enough strong , please enter a difference..")//alerts in any error, e.g.- email address is not valid.
+            //need to have different alerts to each error
         else
             alert(`${dataPost.firstName} created`)
     }
