@@ -26,7 +26,7 @@ public class ProductsRepository : IProductsRepository
             && ((categoryIds.Length == 0) ? (true) : (categoryIds.Contains(product.CategoryId))))
            .OrderBy(product => product.Price).Include(c => c.Category);
         Console.WriteLine(query.ToQueryString());
-        List<Product> products = await query.ToListAsync();
+        List<Product> products = await query.ToListAsync();// return await...
         return products;
         //return await _OurStoreContext.Products.Include(c => c.Category).ToListAsync();
     }
