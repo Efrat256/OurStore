@@ -72,11 +72,7 @@ public class IntegrationTests : IClassFixture<DatabaseFixture>
         var user = new User { Email = "test@example.com", Password = "password123", FirstName = "John", LastName = "Doe" };
 
         // Act
-        // var addedUser = await _context.Users.AddAsync(user);
         var addedUser = await _userRepository.addUser(user);
-
-
-        //await _context.SaveChangesAsync();
 
         // Assert
         Assert.NotNull(addedUser);
