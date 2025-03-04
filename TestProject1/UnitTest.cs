@@ -1,10 +1,10 @@
 using Entities;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.EntityFrameworkCore;
 using Repositories;
 using Services;
 namespace TestOurStore;
+using Microsoft.Extensions.Logging;
 
 public class UnitTest
 {
@@ -52,58 +52,67 @@ public class UnitTest
     }
 
     [Fact]
-    public async Task CreateOrder_checkOrderSum_ReturnsOrder()
+    public async Task AddOrder_OrderSumMatches_ReturnsOrder()
     {
-        var orderItems = new List<OrderItem>() { new() { ProductId = 1 } };
-        var order = new Order { OrderSum = 6, OrderItems = orderItems };
+        // Arrange
+        var order = new Order
+        {
+            OrderSum = 100,
+            OrderItems = new List<OrderItem>
+            {
+                new OrderItem { ProductId = 1 },
+                new OrderItem { ProductId = 2 }
+            }
+        };
 
-        var mockOrderRepository = new Mock<IOrderRepository>();
-        var mockProductRepository = new Mock<IProductsRepository>();
-        var mockLogger = new Mock<ILogger<OrderService>>();
-
-        var products = new List<Product> { new Product { ProductId = 1, Price = 6 } };
-        mockProductRepository.Setup(x => x.GetProducts(It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?[]>()))
-                             .ReturnsAsync(products);
-
-        mockOrderRepository.Setup(x => x.addOrder(It.IsAny<Order>()))
-                           .ReturnsAsync(order);
-
-        var orderService = new OrderService(mockOrderRepository.Object, mockProductRepository.Object, mockLogger.Object);
+        var _orderRepositoryMock = new Mock<IOrderRepository>();
+        var _productsRepositoryMock = new Mock<IProductsRepository>();
+        var _loggerMock = new Mock<ILogger<OrderService>>();
+        var _orderService = new OrderService(_orderRepositoryMock.Object, _productsRepositoryMock.Object, _loggerMock.Object);
+        _productsRepositoryMock.Setup(r => r.GetProductById(1)).ReturnsAsync(new Product { Price = 50 });
+        _productsRepositoryMock.Setup(r => r.GetProductById(2)).ReturnsAsync(new Product { Price = 50 });
+        _orderRepositoryMock.Setup(r => r.addOrder(order)).ReturnsAsync(order);
 
         // Act
-        var result = await orderService.addOrder(order);
+        var result = await _orderService.addOrder(order);
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(order, result);
+        Assert.Equal(100, result.OrderSum);
     }
 
     [Fact]
-    public async Task AddOrder_OrderSumNotMatching_UpdatesOrderSum()
+    public async Task AddOrder_OrderSumDoesNotMatch_FixesOrderSum()
     {
         // Arrange
-        var order = new Order { OrderSum = 100, OrderItems = new List<OrderItem> { new OrderItem { ProductId = 1 } } };
-
-        var mockOrderRepository = new Mock<IOrderRepository>();
-        var mockProductsRepository = new Mock<IProductsRepository>();
-        var mockLogger = new Mock<ILogger<OrderService>>();
-
-        // מוצר לדוגמה עם מחיר
-        var product = new Product { ProductId = 1, Price = 120 };
-        mockProductsRepository.Setup(x => x.GetProducts(It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<int?[]>()))
-                             .ReturnsAsync(new List<Product> { product });
-
-        // mock של ה-Repository שמחזיר את ההזמנה כפי שהיא
-        mockOrderRepository.Setup(x => x.addOrder(It.IsAny<Order>()))
-                           .ReturnsAsync(order);
-
-        var orderService = new OrderService(mockOrderRepository.Object, mockProductsRepository.Object, mockLogger.Object);
+        var order = new Order
+        {
+            OrderSum = 90,
+            OrderItems = new List<OrderItem>
+            {
+                new OrderItem { ProductId = 1 },
+                new OrderItem { ProductId = 2 }
+            }
+        };
+        var _orderRepositoryMock = new Mock<IOrderRepository>();
+        var _productsRepositoryMock = new Mock<IProductsRepository>();
+        var _loggerMock = new Mock<ILogger<OrderService>>();
+        var _orderService = new OrderService(_orderRepositoryMock.Object, _productsRepositoryMock.Object, _loggerMock.Object);
+        _productsRepositoryMock.Setup(r => r.GetProductById(1)).ReturnsAsync(new Product { Price = 50 });
+        _productsRepositoryMock.Setup(r => r.GetProductById(2)).ReturnsAsync(new Product { Price = 50 });
+        _orderRepositoryMock.Setup(r => r.addOrder(order)).ReturnsAsync(order);
 
         // Act
-        var result = await orderService.addOrder(order);
+        var result = await _orderService.addOrder(order);
 
         // Assert
-        Assert.Equal(120, result.OrderSum);  // ודא שהסכום עודכן ל-120
-        //mockLogger.Verify(x => x.LogCritical(It.IsAny<string>()), Times.Once);  // ווידוא שהופק לוג קריטי
+        Assert.Equal(100, result.OrderSum);
+        _loggerMock.Verify(
+            x => x.Log(
+                It.Is<LogLevel>(l => l == LogLevel.Critical),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("The orderSum is not equals to the original sum.")),  // שגיאה אפשרית: אם ההודעה לא תואמת בדיוק את מה שנשלח ל-logger, זה יגרום לשגיאה
+                It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
+            Times.Once);
     }
 }

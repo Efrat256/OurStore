@@ -22,6 +22,7 @@ public class OrderRepository : IOrderRepository
     public async Task<Order> addOrder(Order order)
     {
         await _OurStoreContext.AddAsync(order);
+        Console.WriteLine(order);
         await _OurStoreContext.SaveChangesAsync();
         return order;
     }

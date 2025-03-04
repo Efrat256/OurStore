@@ -10,18 +10,22 @@ using Moq;
 namespace TestOurStore;
 public class IntegrationTests : IClassFixture<DatabaseFixture>
 {
+    private readonly OrderService _service;
     private readonly OurStoreContext _context;
     private readonly Mock<ILogger<OrderService>> _loggerMock;
+    private readonly UserRepository _userRepository;
 
     public IntegrationTests(DatabaseFixture fixture)
     {
-        _context = fixture.Context;
         _loggerMock = new Mock<ILogger<OrderService>>();
+        _context = fixture.Context;
+        _service = new OrderService(new OrderRepository(_context), new ProductsRepository(_context), _loggerMock.Object);
+        _userRepository = new UserRepository(_context);
     }
     [Fact]
     public async Task LogIn_ValidCredentials_ReturnsUser()
     {
-        var user = new User { Email = "test@example.com", Password = "pass123@" };
+        var user = new User { Email = "test@example.com", Password = "pass123@" ,FirstName="Efart"};
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         var userRepository = new UserRepository(_context);
@@ -37,7 +41,7 @@ public class IntegrationTests : IClassFixture<DatabaseFixture>
     [Fact]
     public async Task LogIn_InvalidPassword_ReturnsNoContent()
     {
-        var user = new User { Email = "test@example.com", Password = "pass123@" };
+        var user = new User { Email = "test@example.com", Password = "pass123@", FirstName = "Test" };
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
         var userRepository = new UserRepository(_context);
@@ -60,54 +64,70 @@ public class IntegrationTests : IClassFixture<DatabaseFixture>
         // Assert
         Assert.Null(retrievedUser);
     }
+
     [Fact]
-    public async Task CreateOrder_checkOrderSum_ReturnsOrder()
+    public async Task Post_ShouldAddUser_WhenUserIsValid()
     {
         // Arrange
-        var orderRepository = new OrderRepository(_context);
-        var productRepository = new ProductsRepository(_context);
-        var orderService = new OrderService(orderRepository, productRepository, _loggerMock.Object);
-
-        var orderItems = new List<OrderItem>() { new() { ProductId = 1 } };
-        var order = new Order { OrderSum = 6, OrderItems = orderItems };
+        var user = new User { Email = "test@example.com", Password = "password123", FirstName = "John", LastName = "Doe" };
 
         // Act
-        var result = await orderService.addOrder(order);
+        // var addedUser = await _context.Users.AddAsync(user);
+        var addedUser = await _userRepository.addUser(user);
+
+
+        //await _context.SaveChangesAsync();
 
         // Assert
-        Assert.NotNull(result);
-        Assert.Equal(order, result);
-        _loggerMock.VerifyNoOtherCalls();  // לא אמור להיות רישום לוג במקרה הזה
+        Assert.NotNull(addedUser);
+        Assert.Equal(user.Email, addedUser.Email);
+        Assert.True(addedUser.Id > 0); // נניח שהמזהה יוקצה אוטומטית
     }
+
+
     [Fact]
-    public async Task CreateOrder_checkOrderSum_ReturnsNull()
+    public async Task Post_ShouldSaveOrder_WithCorrectTotalAmount()
     {
-        // Arrange
-        var orderRepository = new OrderRepository(_context);
-        var productRepository = new ProductsRepository(_context);
-        var orderService = new OrderService(orderRepository, productRepository, _loggerMock.Object);
+        // Arrange: יצירת קטגוריה עבור המוצרים (כי יש Foreign Key)
+        var category = new Category { CategoryName = "Electronics" };
+        _context.Categories.Add(category);
+        await _context.SaveChangesAsync();
 
-        // יצירת פריטי הזמנה עם מוצר קיים במסד הנתונים
-        var orderItems = new List<OrderItem>()
-            {
-                new OrderItem { ProductId = 1, Quantity = 1 },
-                new OrderItem { ProductId = 2, Quantity = 1 }
-            };
+        // יצירת מוצרים עם קטגוריה תקפה
+        var product1 = new Product { ProductName = "Laptop", Price = 10, Image = "laptop.jpg", Category = category ,Description="Test"};
+        var product2 = new Product { ProductName = "Phone", Price = 20, Image = "phone.jpg", Category = category, Description = "Test" };
+        var product3 = new Product { ProductName = "Tablet", Price = 15, Image = "tablet.jpg", Category = category , Description = "Test" };
 
-        // כאן נניח שסכום ההזמנה המצופה הוא 6, אבל אנחנו נכנס סכום שגוי
+        _context.Products.AddRange(product1, product2, product3);
+        await _context.SaveChangesAsync();
+
+        // יצירת משתמש (כי UserId חובה בהזמנה)
+        var user = new User { Email = "test@example.com", Password = "password123", FirstName = "John", LastName = "Doe" };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        // יצירת הזמנה עם מוצרים תקפים ו-UserId
         var order = new Order
         {
-            OrderSum = 15.0,  // סכום שגוי
-            OrderItems = orderItems
+            OrderDate = DateTime.UtcNow,
+            OrderSum = 0,  // יחושב ע"י CheckSum
+            UserId = user.Id,
+            OrderItems = new List<OrderItem>
+            {
+                new OrderItem { ProductId = product1.ProductId, Quantity = 1 },
+                new OrderItem { ProductId = product2.ProductId, Quantity = 1 },
+                new OrderItem { ProductId = product3.ProductId, Quantity = 1 }
+            }
         };
 
-        // Act: קריאה לפונקציה addOrder
-        var result = await orderService.addOrder(order);
+        // Act: שליחת ההזמנה לפונקציה הנבדקת
+        var savedOrder = await _service.addOrder(order);
 
-        // Assert: 
-        Assert.Null(result);
-
-        _loggerMock.VerifyNoOtherCalls();
+        // Assert: בדיקת תקינות הנתונים
+        Assert.NotNull(savedOrder);
+        Assert.Equal(45, savedOrder.OrderSum); // 10.5 + 20.0 + 15.75
+        Assert.Equal(3, savedOrder.OrderItems.Count); // 3 מוצרים בהזמנה
+        Assert.Equal(user.Id, savedOrder.UserId); // בדיקה שהמשתמש משויך להזמנה
     }
 
 }

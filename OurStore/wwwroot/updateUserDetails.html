@@ -4,18 +4,21 @@
     <meta charset="utf-8" />
     <title>עדכון פרטי משתמש</title>
     <script src="/js/home.js"></script>
-    <!--<script defer src="home.js"></script>-->
+    <link href="/css/home.css" rel="stylesheet" />
 
 </head>
-<body dir="rtl" onLoad="details()">
-    <div>
-        <h1>עדכון פרטי משתמש</h1>
-        <input placeholder="אימייל" type="email" id="email" /><br />
-        <input placeholder="סיסמא" type="password" id="password" onblur="CheckPassword()" />
-        <progress id="strengthMeter" max="4" value="0"></progress><br />
-        <input placeholder="שם פרטי" id="firstName" /><br />
-        <input placeholder="שם משפחה" id="lastName" /><br />
-        <button onclick="updateDetails()">עדכון</button>
+
+<div class="container">
+    <body dir="rtl" onLoad="details()">
+        <div>
+            <h1>עדכון פרטי משתמש</h1>
+            <input placeholder="אימייל" type="email" id="email" /><br />
+            <input placeholder="סיסמא" type="password" id="password" onblur="CheckPassword()" />
+            <progress id="strengthMeter" max="4" value="0"></progress><br />
+            <input placeholder="שם פרטי" id="firstName" /><br />
+            <input placeholder="שם משפחה" id="lastName" /><br />
+            <button onclick="updateDetails()">עדכון</button>
+        </div>
+    </body>
     </div>
-</body>
 </html>

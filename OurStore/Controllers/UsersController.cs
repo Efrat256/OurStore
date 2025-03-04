@@ -65,10 +65,6 @@ public class UsersController : ControllerBase
     public int PostPassword([FromQuery] string password)
     {
        return userService.checkPassword(password);
-        //if (score < 3)
-        //    return BadRequest(score);
-        //else
-        //    return Ok(score);
     }
 }
 

@@ -22,24 +22,6 @@ namespace OurStore.Controllers
             mapper = _mapper;
             cache= _cache;
         }
-//        [HttpGet]
-//        public async Task<ActionResult<IEnumerable<CategoryDTO>>> Get()
-//        {
-//            if (!cache.TryGetValue("categories", out List<Category> categories))
-//            {
-
-//                categories = await categoryService.getAll();
-//                cache.Set("categories", categories, TimeSpan.FromMinutes(10));
-
-//            }
-//            List<CategoryDTO> categoryDTOList = mapper.Map<List<Category>, List<CategoryDTO>>(categoryList);
-
-//            return categoryDTOs != null ? Ok(categoryDTOs) : NoContent();
-//        }
-
-//    }
-
-//}
 
 // GET: api/<CategoryController>
 [HttpGet]

@@ -4,25 +4,34 @@
     <meta charset="utf-8" />
     <title>SignIn</title>
     <script defer src="./js/home.js"></script>
-    <link href="./css/home.css" rel="stylesheet"/>
-
+    <link href="./css/home.css" rel="stylesheet" />
 </head>
-<body dir="rtl">
-    <h1>כניסה</h1>
-    <input placeholder="אימייל" type="email" id="emailLogin" /><br />
-    <input placeholder="סיסמא" type="password" id="passwordLogin" /><br />
-    <button onclick="Login()">כניסה</button>
-    <button onClick ="ShowRegister()">משתמש חדש</button>
-    
-    <div class="visibleRegister">
-        <h1>הרשמה</h1>
-        <input placeholder="אימייל" type="email" id="email" /><br />
-        <input placeholder="סיסמא" type="password" id="password" onblur="CheckPassword()" />
-        <progress id="strengthMeter" max="4" value="0"></progress><br/>
-        <input placeholder="שם פרטי" id="firstName" /><br />
-        <input placeholder="שם משפחה" id="lastName" /><br />
-        <button onclick="SignIn()">הרשמה</button>
-    </div>
 
-</body>
+<div class="container">
+    <body dir="rtl">
+
+        <!-- טופס כניסה -->
+        <div class="loginForm">
+            <h1>כניסה</h1>
+            <input placeholder="אימייל" type="email" id="emailLogin" /><br />
+            <input placeholder="סיסמא" type="password" id="passwordLogin" /><br />
+            <button onclick="Login()">כניסה</button>
+            <button onClick="onNewUserClick()">משתמש חדש</button>
+        </div>
+
+        <!-- טופס הרשמה -->
+        <div class="signIn" style="display: none;">
+            <h1>הרשמה</h1>
+            <input placeholder="אימייל" type="email" id="email" /><br />
+            <input placeholder="סיסמא" type="password" id="password" onblur="CheckPassword()" />
+            <progress id="strengthMeter" max="4" value="0"></progress><br />
+            <input placeholder="שם פרטי" id="firstName" /><br />
+            <input placeholder="שם משפחה" id="lastName" /><br />
+            <button onclick="SignIn()">הרשמה</button>
+        </div>
+
+    </body>
+    </div>
 </html>
+
+

@@ -39,7 +39,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-//builder.Host.UseNLog();
+builder.Host.UseNLog();
 builder.Services.AddMemoryCache();
 
 var app = builder.Build();
@@ -49,7 +49,7 @@ if (app.Environment.IsEnvironment("School"))
     app.UseSwaggerUI();
 }
 // Configure the HTTP request pipeline.
-//app.UseErrorHandlingMiddleware();
+app.UseErrorHandlingMiddleware();
 
 app.UseRatingMiddleware();
 

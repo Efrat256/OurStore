@@ -32,7 +32,6 @@ public class ProductsRepository : IProductsRepository
         Console.WriteLine(query.ToQueryString());
         List<Product> products = await query.ToListAsync();
         return products;
-        //return await _OurStoreContext.Products.Include(c => c.Category).ToListAsync();
     }
 
 }

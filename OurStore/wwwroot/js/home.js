@@ -34,6 +34,7 @@ const SignIn = async () => {
             const dataPost = await responsePost.json();
             if (responsePost.ok) {
                 alert(`${dataPost.firstName} created`)
+                window.location.href ="home.html"
             }
         }
         catch (error) {
@@ -67,10 +68,7 @@ const Login = async () => {
     }
 }
 
-const ShowRegister = () => {
-    const register = document.querySelector(".visibleRegister");
-    register.classList.remove("visibleRegister")
-}
+
 const CheckPassword = async () => {
     const password = document.querySelector("#password").value;
     if (password) {
@@ -111,8 +109,10 @@ const updateDetails = async () => {
                 },
                 body: JSON.stringify(nweUser)
             })
-            if (responsePut.ok)
+            if (responsePut.ok) {
                 alert(`updated succefully`)
+                window.location.href ="Products.html"
+            }
         }
         catch (err) {
             alert(err)
@@ -141,4 +141,11 @@ const updateDetails = async () => {
             alert(err)
         }
         
+}
+const onNewUserClick = () => {
+    const loginForm = document.querySelector('.loginForm'); // טופס הכניסה
+    const signInForm = document.querySelector('.signIn'); // טופס הרישום
+    // מסתיר את טופס הכניסה ומציג את טופס הרישום
+    loginForm.style.display = "none";
+    signInForm.style.display = "block";
 }

@@ -25,9 +25,9 @@ public class OrderService : IOrderService
         double orderSum = await getSumProduct(order);
         if (orderSum != order.OrderSum)
         {
-            logger.LogCritical("The orderSum is not equals to the original sum.");
+            logger.LogCritical($"The orderSum is not equals to the original sum. user: {order.UserId} try to change the sum!!!");
             order.OrderSum = orderSum;
-        }  
+        }
         return await orderRepository.addOrder(order);
     }
     public async Task<Order> getById(int id)
